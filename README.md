@@ -15,8 +15,11 @@ In order to run, KdeEcoTest and KdeEcoTestCreator require python-libxdo and pynp
 ### KdeEcoTestCreator usage
 
 KdeEcoTestCreator creates the testing scrip that will be used by KdeEco test.
+
 To start KdeEcoTestCreator, type the following command:
-  python3 KdeEcoTestCreator.py --outputFilename KdeEcoTestScript.txt
+
+  **python3 KdeEcoTestCreator.py --outputFilename KdeEcoTestScript.txt**
+  
 A round mouse pointer appears. Click on the application you want to test.
 Open testOutputScript.txt into Kate
 Command prompt invites you to enter one of the available command.
@@ -33,8 +36,12 @@ Command prompt invites you to enter one of the available command.
 
 ### KdeEcoTest usage
 
-KdeEcoTest script files to execute actions in order to test computer applications. These can be created using KdeEcoTestCreator or by hand.
+KdeEcoTest script files to execute actions in order to test computer applications. 
+These can be created using KdeEcoTestCreator or by hand.
+
 To start the test, enter the following command:
-  python3 KdeEcoTest.py --inputFilename KdeEcoTestScript.txt
+
+  **python3 KdeEcoTest.py --inputFilename KdeEcoTestScript.txt**
+  
 To pause the test, press F1.
 To abort the program, press F2
