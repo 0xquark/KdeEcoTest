@@ -11,6 +11,8 @@ import signal
 
 window_defined = False
 writeMousePosToFile = False
+writeMouseOnce = False
+
 
 def defineWindow():
     ## get application origin coordinates
@@ -26,12 +28,12 @@ def defineWindow():
     global win_size
     win_size = xdo.get_window_size(win_id)
 
-    #SetWindowToOriginalSize will need to be used, but at the moment I do not know where. It has to be written because KdeEcoTest has to be applied on the same windows size than the original tested window.
+    # SetWindowToOriginalSize will need to be used, but at the moment I do not know where. It has to be written because KdeEcoTest has to be applied on the same windows size than the original tested window.
     file1 = open(outputFilename, 'a')
     file1.write("# Original window properties\n")
-    #I comment moveWindowToOriginalLocation at the moment because I am not sure it is useful.
-    #file1.write("moveWindowToOriginalLocation {0},{1}\n".format(win_location.x,win_location.y))
-    file1.write("setWindowToOriginalSize {0},{1}\n\n".format(win_size.width,win_size.height))
+    # I comment moveWindowToOriginalLocation at the moment because I am not sure it is useful.
+    # file1.write("moveWindowToOriginalLocation {0},{1}\n".format(win_location.x,win_location.y))
+    file1.write("setWindowToOriginalSize {0},{1}\n\n".format(win_size.width, win_size.height))
     file1.close()
 
 
@@ -39,18 +41,32 @@ def addClick():
     if window_defined == False:
         print("To add click mouse coordinates, first define which application is tested.")
         print("Enter the dw command (defined window) and click on the application.")
-    else:    
-        print("Every mouse click are now added to the end of the KdeEcoTest output file.")
-        
-        print("Add click at " + str(win_location.x) + "," + str(win_location.y))
+    else:
+        print("Mouse click is now added to the end of the KdeEcoTest output file.")
+
         global writeMousePosToFile
         writeMousePosToFile = True
 
+
 def stopClick():
-        print("Mouse clicks are not added anymore to the output file.")  
-        global writeMousePosToFile
-        writeMousePosToFile = False
-    
+    print("Mouse clicks are not added anymore to the output file.")
+    global writeMousePosToFile
+    writeMousePosToFile = False
+
+def scrollup():
+    file1 = open(outputFilename, 'a')
+    file1.write("scrollup\n")
+    file1.write("sleep 2\n")
+    file1.write("\n")
+    file1.close()
+
+def scrolldown():
+    file1 = open(outputFilename, 'a')
+    file1.write("scrolldown\n")
+    file1.write("sleep 2\n")
+    file1.write("\n")
+    file1.close()
+
 def writeToScreen():
     print("Write to the screen, enter you text.")
     textInput = input()
@@ -62,6 +78,7 @@ def writeToScreen():
     file1.write("\n")
     file1.close()
 
+
 def writeTimestampToLog():
     print("Log timestamp command written to the sript.")
     file1 = open(outputFilename, 'a')
@@ -69,6 +86,7 @@ def writeTimestampToLog():
     file1.write("writeTimestampToLog\n")
     file1.write("\n")
     file1.close()
+
 
 def writeMessageToLog():
     print("Write a message to the log file, enter you text.")
@@ -82,15 +100,16 @@ def writeMessageToLog():
     print("Log timestamp command written to the sript.")
 
 
-
-#get input arguments
+# get input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("--outputFilename", required=True, help = "Test script to be used with KdeEcoTest.")
+parser.add_argument("--outputFilename", required=True, help="Test script to be used with KdeEcoTest.")
 args = parser.parse_args()
-outputFilename = args.outputFilename 
+outputFilename = args.outputFilename
 
 
 def on_click(x, y, button, pressed):
+    global writeMousePosToFile
+    global writeMouseOnce
     if writeMousePosToFile:
         if button == mouse.Button.left:
             if pressed:
@@ -113,33 +132,41 @@ def on_click(x, y, button, pressed):
                 print("# Click on")
                 print(clickOnMsgStr)
                 print(sleepMsgStr)
-                # Using asynchronous is tricky, I am wondering how we could use the while True: loop to get its Enter command print. Meanwhile I am writting this fudge:
-                print("Enter Your command:\n")
+                if writeMouseOnce:
+                    writeMousePosToFile = False
+                    writeMouseOnce = False
+                else:
+                    # Using asynchronous is tricky, I am wondering how we could use the while True: loop to get its Enter command print. Meanwhile I am writting this fudge:
+                    print("Enter Your command:\n")
 
-    
+
 listener = mouse.Listener(
     on_click=on_click)
-listener.start()    
-
+listener.start()
 
 print("KdeEcoTestCreator helps to edit KdeEcoTest script files.")
 print("Commands:")
 print("dw: define window.")
+print("asc: add single click.")
 print("ac: add clicks.")
 print("sc: stop add clicks.")
 print("ws: write to the screen.")
 print("wtl: write test timestamp to log.")
 print("wmtl: write message to log.")
+print("asu : after scroll up ")
+print("asd : after scroll down")
 print("\n")
 
 print("To begin with, click on the application you want the script to be written for.")
 defineWindow()
 
-
 while True:
+    if writeMouseOnce:
+        continue
+
     print("Enter your command: ")
     commandStr = input()
- 
+
     if commandStr == "dw":
         defineWindow()
     elif commandStr == "ws":
@@ -148,6 +175,13 @@ while True:
         addClick()
     elif commandStr == "sc":
         stopClick()
+    elif commandStr == "asc":
+        writeMouseOnce = True
+        addClick()
+    elif commandStr == "asu":
+        scrollup()
+    elif commandStr == "asd":
+        scrolldown()
     elif commandStr == "wtl":
         writeTimestampToLog()
     elif commandStr == "wmtl":
@@ -156,4 +190,3 @@ while True:
         os.kill(os.getpid(), signal.SIGTERM)
     else:
         print("Command unknown.")
-        
